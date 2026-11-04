@@ -1,364 +1,298 @@
 /* ===================================================================
- * Luther 1.0.0 - Main JS
- *
- * ------------------------------------------------------------------- */
+ * DANIEL GARCÍA ARIZA (DGA) — Editorial Monograph Interactive Engine
+ * Optical Window Parallax · Asymmetric Column Drift · Accessible Modals
+ * =================================================================== */
 
-(function(html) {
-
+(function () {
     "use strict";
 
-    html.className = html.className.replace(/\bno-js\b/g, '') + ' js ';
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+    /* -------------------------------------------------------------------
+     * 1. OPTICAL WINDOW PARALLAX & ASYMMETRIC COLUMN DRIFT
+     * ------------------------------------------------------------------- */
+    function initParallaxEngine() {
+        if (prefersReducedMotion.matches) return;
 
+        const blockLayers = Array.from(document.querySelectorAll("[data-parallax-speed]"));
+        const imageLayers = Array.from(document.querySelectorAll("[data-img-parallax]"));
+        const progressBar = document.querySelector(".scroll-progress");
+        const supportsNativeScrollTimeline = CSS.supports("(animation-timeline: scroll()) and (animation-range: 0% 100%)");
 
-   /* Animations
-    * -------------------------------------------------- */
-    const tl = anime.timeline( {
-        easing: 'easeInOutCubic',
-        duration: 800,
-        autoplay: false
-    })
-    .add({
-        targets: '#loader',
-        opacity: 0,
-        duration: 1000,
-        begin: function(anim) {
-            window.scrollTo(0, 0);
-        }
-    })
-    .add({
-        targets: '#preloader',
-        opacity: 0,
-        complete: function(anim) {
-            document.querySelector("#preloader").style.visibility = "hidden";
-            document.querySelector("#preloader").style.display = "none";
-        }
-    })
-    .add({
-        targets: '.s-header',
-        translateY: [-100, 0],
-        opacity: [0, 1]
-    }, '-=200')
-    .add({
-        targets: [ '.s-intro .text-pretitle', '.s-intro .text-huge-title'],
-        translateX: [100, 0],
-        opacity: [0, 1],
-        delay: anime.stagger(400)
-    })
-    .add({
-        targets: '.circles span',
-        keyframes: [
-            {opacity: [0, .3]},
-            {opacity: [.3, .1], delay: anime.stagger(100, {direction: 'reverse'})}
-        ],
-        delay: anime.stagger(100, {direction: 'reverse'})
-    })
-    .add({
-        targets: '.intro-social li',
-        translateX: [-50, 0],
-        opacity: [0, 1],
-        delay: anime.stagger(100, {direction: 'reverse'})
-    })
-    .add({
-        targets: '.intro-scrolldown',
-        translateY: [100, 0],
-        opacity: [0, 1]
-    }, '-=800');
+        let ticking = false;
 
+        function updateParallax() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            const viewportHeight = window.innerHeight;
+            const isMobile = window.innerWidth < 860;
+            const dampener = isMobile ? 0.25 : 1;
 
-
-   /* Preloader
-    * -------------------------------------------------- */
-    const ssPreloader = function() {
-
-        const preloader = document.querySelector('#preloader');
-        if (!preloader) return;
-        
-        window.addEventListener('load', function() {
-            document.querySelector('html').classList.remove('ss-preload');
-            document.querySelector('html').classList.add('ss-loaded');
-
-            document.querySelectorAll('.ss-animated').forEach(function(item){
-                item.classList.remove('ss-animated');
-            });
-
-            tl.play();
-        });
-
-        // force page scroll position to top at page refresh
-        // window.addEventListener('beforeunload' , function () {
-        //     // window.scrollTo(0, 0);
-        // });
-
-    }; // end ssPreloader
-
-
-   /* Mobile Menu
-    * ---------------------------------------------------- */ 
-    const ssMobileMenu = function() {
-
-        const toggleButton = document.querySelector('.mobile-menu-toggle');
-        const mainNavWrap = document.querySelector('.main-nav-wrap');
-        const siteBody = document.querySelector("body");
-
-        if (!(toggleButton && mainNavWrap)) return;
-
-        toggleButton.addEventListener('click', function(event) {
-            event.preventDefault();
-            toggleButton.classList.toggle('is-clicked');
-            siteBody.classList.toggle('menu-is-open');
-        });
-
-        mainNavWrap.querySelectorAll('.main-nav a').forEach(function(link) {
-            link.addEventListener("click", function(event) {
-
-                // at 800px and below
-                if (window.matchMedia('(max-width: 800px)').matches) {
-                    toggleButton.classList.toggle('is-clicked');
-                    siteBody.classList.toggle('menu-is-open');
-                }
-            });
-        });
-
-        window.addEventListener('resize', function() {
-
-            // above 800px
-            if (window.matchMedia('(min-width: 801px)').matches) {
-                if (siteBody.classList.contains('menu-is-open')) siteBody.classList.remove('menu-is-open');
-                if (toggleButton.classList.contains("is-clicked")) toggleButton.classList.remove("is-clicked");
+            // Progress hairline fallback
+            if (progressBar && !supportsNativeScrollTimeline) {
+                const maxScroll = Math.max(1, document.documentElement.scrollHeight - viewportHeight);
+                const progress = Math.min(1, Math.max(0, scrollY / maxScroll));
+                progressBar.style.setProperty("--scroll-progress", progress.toFixed(4));
             }
-        });
 
-    }; // end ssMobileMenu
+            // Asymmetric column drift (Hero plate & Exhibition pieces)
+            blockLayers.forEach((el) => {
+                if (el.hasAttribute("hidden")) return;
+                const speed = parseFloat(el.dataset.parallaxSpeed || "0") * dampener;
+                if (!speed) return;
 
+                const rect = el.getBoundingClientRect();
+                if (rect.bottom < -250 || rect.top > viewportHeight + 250) return;
 
-   /* Highlight active menu link on pagescroll
-    * ------------------------------------------------------ */
-    const ssScrollSpy = function() {
-
-        const sections = document.querySelectorAll(".target-section");
-
-        // Add an event listener listening for scroll
-        window.addEventListener("scroll", navHighlight);
-
-        function navHighlight() {
-        
-            // Get current scroll position
-            let scrollY = window.pageYOffset;
-        
-            // Loop through sections to get height(including padding and border), 
-            // top and ID values for each
-            sections.forEach(function(current) {
-                const sectionHeight = current.offsetHeight;
-                const sectionTop = current.offsetTop - 50;
-                const sectionId = current.getAttribute("id");
-            
-               /* If our current scroll position enters the space where current section 
-                * on screen is, add .current class to parent element(li) of the thecorresponding 
-                * navigation link, else remove it. To know which link is active, we use 
-                * sectionId variable we are getting while looping through sections as 
-                * an selector
-                */
-                if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-                    document.querySelector(".main-nav a[href*=" + sectionId + "]").parentNode.classList.add("current");
-                } else {
-                    document.querySelector(".main-nav a[href*=" + sectionId + "]").parentNode.classList.remove("current");
-                }
+                const centerOffset = rect.top + rect.height * 0.5 - viewportHeight * 0.5;
+                const translateY = -centerOffset * speed;
+                el.style.setProperty("--parallax-y", `${translateY.toFixed(1)}px`);
             });
+
+            // Inner Optical Window Image Parallax (image glides inside its sharp frame)
+            imageLayers.forEach((img) => {
+                const container = img.parentElement;
+                if (!container) return;
+
+                const rect = container.getBoundingClientRect();
+                if (rect.bottom < -100 || rect.top > viewportHeight + 100) return;
+
+                const factor = parseFloat(img.dataset.imgParallax || "0.12");
+                const progress = (rect.top + rect.height * 0.5 - viewportHeight * 0.5) / viewportHeight;
+                const shiftY = progress * rect.height * factor;
+
+                img.style.setProperty("--img-parallax-y", `${shiftY.toFixed(1)}px`);
+            });
+
+            ticking = false;
         }
 
-    }; // end ssScrollSpy
-
-
-   /* Animate elements if in viewport
-    * ------------------------------------------------------ */
-    const ssViewAnimate = function() {
-
-        const blocks = document.querySelectorAll("[data-animate-block]");
-
-        window.addEventListener("scroll", viewportAnimation);
-
-        function viewportAnimation() {
-
-            let scrollY = window.pageYOffset;
-
-            blocks.forEach(function(current) {
-
-                const viewportHeight = window.innerHeight;
-                const triggerTop = (current.offsetTop + (viewportHeight * .2)) - viewportHeight;
-                const blockHeight = current.offsetHeight;
-                const blockSpace = triggerTop + blockHeight;
-                const inView = scrollY > triggerTop && scrollY <= blockSpace;
-                const isAnimated = current.classList.contains("ss-animated");
-
-                if (inView && (!isAnimated)) {
-                    anime({
-                        targets: current.querySelectorAll("[data-animate-el]"),
-                        opacity: [0, 1],
-                        translateY: [100, 0],
-                        delay: anime.stagger(400, {start: 200}),
-                        duration: 800,
-                        easing: 'easeInOutCubic',
-                        begin: function(anim) {
-                            current.classList.add("ss-animated");
-                        }
-                    });
-                }
-            });
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(updateParallax);
+                ticking = true;
+            }
         }
 
-    }; // end ssViewAnimate
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll, { passive: true });
+        updateParallax();
+    }
 
+    /* -------------------------------------------------------------------
+     * 2. SCROLL REVEAL (INTERSECTION OBSERVER)
+     * ------------------------------------------------------------------- */
+    function initScrollReveal() {
+        const revealElements = document.querySelectorAll(".reveal-up");
+        if (!revealElements.length) return;
 
-   /* Swiper
-    * ------------------------------------------------------ */ 
-    const ssSwiper = function() {
+        if (prefersReducedMotion.matches || !("IntersectionObserver" in window)) {
+            revealElements.forEach((el) => el.classList.add("is-visible"));
+            return;
+        }
 
-        const mySwiper = new Swiper('.swiper-container', {
-
-            slidesPerView: 1,
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
+        const observer = new IntersectionObserver(
+            (entries, obs) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("is-visible");
+                        obs.unobserve(entry.target);
+                    }
+                });
             },
-            breakpoints: {
-                // when window width is > 400px
-                401: {
-                    slidesPerView: 1,
-                    spaceBetween: 20
-                },
-                // when window width is > 800px
-                801: {
-                    slidesPerView: 2,
-                    spaceBetween: 32
-                },
-                // when window width is > 1200px
-                1201: {
-                    slidesPerView: 2,
-                    spaceBetween: 80
-                }
+            {
+                threshold: 0.1,
+                rootMargin: "0px 0px -30px 0px"
             }
-         });
+        );
 
-    }; // end ssSwiper
+        revealElements.forEach((el) => observer.observe(el));
+    }
 
+    /* -------------------------------------------------------------------
+     * 3. ACTIVE SECTION NAVIGATION SPY
+     * ------------------------------------------------------------------- */
+    function initScrollSpy() {
+        const sections = document.querySelectorAll(".target-section");
+        const navLinks = document.querySelectorAll(".main-nav__link");
 
-   /* Lightbox
-    * ------------------------------------------------------ */
-    const ssLightbox = function() {
+        if (!("IntersectionObserver" in window) || !sections.length) return;
 
-        const folioLinks = document.querySelectorAll('.folio-list__item-link');
-        const modals = [];
-
-        folioLinks.forEach(function(link) {
-            let modalbox = link.getAttribute('href');
-            let instance = basicLightbox.create(
-                document.querySelector(modalbox),
-                {
-                    onShow: function(instance) {
-                        //detect Escape key press
-                        document.addEventListener("keydown", function(event) {
-                            event = event || window.event;
-                            if (event.keyCode === 27) {
-                                instance.close();
-                            }
+        const spyObserver = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute("id");
+                        navLinks.forEach((link) => {
+                            const isMatch = link.getAttribute("href") === `#${id}`;
+                            link.classList.toggle("is-active", isMatch);
                         });
                     }
-                }
-            )
-            modals.push(instance);
-        });
-
-        folioLinks.forEach(function(link, index) {
-            link.addEventListener("click", function(event) {
-                event.preventDefault();
-                modals[index].show();
-            });
-        });
-
-    };  // end ssLightbox
-
-
-   /* Alert boxes
-    * ------------------------------------------------------ */
-    const ssAlertBoxes = function() {
-
-        const boxes = document.querySelectorAll('.alert-box');
-  
-        boxes.forEach(function(box){
-
-            box.addEventListener('click', function(event) {
-                if (event.target.matches(".alert-box__close")) {
-                    event.stopPropagation();
-                    event.target.parentElement.classList.add("hideit");
-
-                    setTimeout(function(){
-                        box.style.display = "none";
-                    }, 500)
-                }    
-            });
-
-        })
-
-    }; // end ssAlertBoxes
-
-
-   /* Smoothscroll
-    * ------------------------------------------------------ */
-    const ssMoveTo = function(){
-
-        const easeFunctions = {
-            easeInQuad: function (t, b, c, d) {
-                t /= d;
-                return c * t * t + b;
+                });
             },
-            easeOutQuad: function (t, b, c, d) {
-                t /= d;
-                return -c * t* (t - 2) + b;
-            },
-            easeInOutQuad: function (t, b, c, d) {
-                t /= d/2;
-                if (t < 1) return c/2*t*t + b;
-                t--;
-                return -c/2 * (t*(t-2) - 1) + b;
-            },
-            easeInOutCubic: function (t, b, c, d) {
-                t /= d/2;
-                if (t < 1) return c/2*t*t*t + b;
-                t -= 2;
-                return c/2*(t*t*t + 2) + b;
+            {
+                rootMargin: "-35% 0px -55% 0px",
+                threshold: 0
+            }
+        );
+
+        sections.forEach((sec) => spyObserver.observe(sec));
+    }
+
+    /* -------------------------------------------------------------------
+     * 4. MOBILE NAVIGATION DRAWER
+     * ------------------------------------------------------------------- */
+    function initMobileNav() {
+        const toggleBtn = document.getElementById("mobile-nav-toggle");
+        const drawer = document.getElementById("mobile-drawer");
+        const mainContent = document.getElementById("main-content");
+        if (!toggleBtn || !drawer) return;
+
+        function setMenuState(isOpen) {
+            toggleBtn.setAttribute("aria-expanded", String(isOpen));
+            const label = toggleBtn.querySelector(".mobile-nav-toggle__label");
+            if (label) label.textContent = isOpen ? "CERRAR" : "MENÚ";
+
+            if (isOpen) {
+                drawer.removeAttribute("hidden");
+                if (mainContent) mainContent.setAttribute("inert", "");
+                document.body.style.overflow = "hidden";
+            } else {
+                drawer.setAttribute("hidden", "");
+                if (mainContent) mainContent.removeAttribute("inert");
+                document.body.style.overflow = "";
             }
         }
 
-        const triggers = document.querySelectorAll('.smoothscroll');
-        
-        const moveTo = new MoveTo({
-            tolerance: 0,
-            duration: 1200,
-            easing: 'easeInOutCubic',
-            container: window
-        }, easeFunctions);
-
-        triggers.forEach(function(trigger) {
-            moveTo.registerTrigger(trigger);
+        toggleBtn.addEventListener("click", () => {
+            const expanded = toggleBtn.getAttribute("aria-expanded") === "true";
+            setMenuState(!expanded);
         });
 
-    }; // end ssMoveTo
+        drawer.querySelectorAll("a").forEach((link) => {
+            link.addEventListener("click", () => setMenuState(false));
+        });
 
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && toggleBtn.getAttribute("aria-expanded") === "true") {
+                setMenuState(false);
+                toggleBtn.focus();
+            }
+        });
 
-   /* Initialize
-    * ------------------------------------------------------ */
-    (function ssInit() {
+        window.addEventListener("resize", () => {
+            if (window.innerWidth > 860 && toggleBtn.getAttribute("aria-expanded") === "true") {
+                setMenuState(false);
+            }
+        });
+    }
 
-        ssPreloader();
-        ssMobileMenu();
-        ssScrollSpy();
-        ssViewAnimate();
-        ssSwiper();
-        ssLightbox();
-        ssAlertBoxes();
-        ssMoveTo();
+    /* -------------------------------------------------------------------
+     * 5. EXHIBITION PORTFOLIO FILTERING
+     * ------------------------------------------------------------------- */
+    function initPortfolioFilters() {
+        const filterButtons = document.querySelectorAll(".filter-tab");
+        const workPieces = document.querySelectorAll(".work-piece");
+        if (!filterButtons.length || !workPieces.length) return;
 
-    })();
+        filterButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const filter = btn.dataset.filter;
 
-})(document.documentElement);
+                filterButtons.forEach((b) => {
+                    const active = b === btn;
+                    b.classList.toggle("is-active", active);
+                    b.setAttribute("aria-selected", String(active));
+                });
+
+                workPieces.forEach((piece) => {
+                    const match = filter === "all" || piece.dataset.category === filter;
+                    if (match) {
+                        piece.removeAttribute("hidden");
+                        piece.classList.toggle("is-filtered", filter !== "all");
+                    } else {
+                        piece.setAttribute("hidden", "");
+                    }
+                });
+
+                window.dispatchEvent(new Event("scroll"));
+            });
+        });
+    }
+
+    /* -------------------------------------------------------------------
+     * 6. NATIVE <DIALOG> CASE STUDY MODALS
+     * ------------------------------------------------------------------- */
+    function initCaseModals() {
+        const modalTriggers = document.querySelectorAll("[data-modal-target]");
+
+        function openModalById(targetId) {
+            const dialog = document.getElementById(targetId);
+            if (dialog && typeof dialog.showModal === "function") {
+                dialog.showModal();
+            }
+        }
+
+        modalTriggers.forEach((trigger) => {
+            trigger.addEventListener("click", () => {
+                openModalById(trigger.getAttribute("data-modal-target"));
+            });
+
+            if (trigger.getAttribute("role") === "button") {
+                trigger.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openModalById(trigger.getAttribute("data-modal-target"));
+                    }
+                });
+            }
+        });
+
+        document.querySelectorAll(".case-dialog").forEach((dialog) => {
+            dialog.addEventListener("click", (event) => {
+                const container = dialog.querySelector(".case-dialog__container");
+                if (container && !container.contains(event.target)) {
+                    dialog.close();
+                }
+            });
+        });
+    }
+
+    /* -------------------------------------------------------------------
+     * 7. EMAIL CLIPBOARD & FOOTER YEAR
+     * ------------------------------------------------------------------- */
+    function initUtilities() {
+        const copyBtn = document.getElementById("copy-email-btn");
+        const copyText = document.getElementById("copy-email-text");
+
+        if (copyBtn && copyText) {
+            copyBtn.addEventListener("click", async () => {
+                const email = copyBtn.dataset.email || "dani.dga@gmail.com";
+                try {
+                    await navigator.clipboard.writeText(email);
+                    const original = copyText.textContent;
+                    copyText.textContent = "[ DIRECCIÓN COPIADA ✓ ]";
+                    setTimeout(() => {
+                        copyText.textContent = original;
+                    }, 2400);
+                } catch (_err) {
+                    window.location.href = `mailto:${email}`;
+                }
+            });
+        }
+
+        const yearEl = document.getElementById("current-year");
+        if (yearEl) {
+            yearEl.textContent = String(new Date().getFullYear());
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initParallaxEngine();
+        initScrollReveal();
+        initScrollSpy();
+        initMobileNav();
+        initPortfolioFilters();
+        initCaseModals();
+        initUtilities();
+    });
+})();
