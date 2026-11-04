@@ -9,6 +9,47 @@
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     /* -------------------------------------------------------------------
+     * 0. ARCHITECTURAL EDITORIAL PRELOADER
+     * ------------------------------------------------------------------- */
+    function initPreloader() {
+        const preloader = document.getElementById("preloader");
+        if (!preloader) return;
+
+        const bar = preloader.querySelector(".preloader__bar");
+        const counter = document.getElementById("preloader-counter");
+        let progress = 0;
+
+        const interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 18) + 8;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                if (bar) bar.style.width = "100%";
+                if (counter) counter.textContent = "100%";
+                setTimeout(() => {
+                    preloader.classList.add("is-loaded");
+                }, 280);
+            } else {
+                if (bar) bar.style.width = `${progress}%`;
+                if (counter) counter.textContent = `${String(progress).padStart(2, "0")}%`;
+            }
+        }, 35);
+
+        // Fallback safety timeout if window takes longer to trigger
+        window.addEventListener("load", () => {
+            if (progress < 100) {
+                progress = 100;
+                clearInterval(interval);
+                if (bar) bar.style.width = "100%";
+                if (counter) counter.textContent = "100%";
+                setTimeout(() => {
+                    preloader.classList.add("is-loaded");
+                }, 200);
+            }
+        });
+    }
+
+    /* -------------------------------------------------------------------
      * 1. OPTICAL WINDOW PARALLAX & ASYMMETRIC COLUMN DRIFT
      * ------------------------------------------------------------------- */
     function initParallaxEngine() {
@@ -287,6 +328,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+        initPreloader();
         initParallaxEngine();
         initScrollReveal();
         initScrollSpy();

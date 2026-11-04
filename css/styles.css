@@ -3,7 +3,7 @@
  * Architectural Swiss Grid · Sharp Corners · Optical Parallax
  * =================================================================== */
 
-@layer reset, base, theme, grid, header, hero, works, about, expertise, contact, modal, utilities;
+@layer reset, base, theme, preloader, grid, header, hero, works, about, expertise, contact, modal, utilities;
 
 /* -------------------------------------------------------------------
  * 1. DESIGN TOKENS — EDITORIAL ARCHIVE PALETTE
@@ -104,6 +104,91 @@
         opacity: 0.35;
         pointer-events: none;
         user-select: none;
+    }
+}
+
+/* -------------------------------------------------------------------
+ * 2.1. ARCHITECTURAL PRELOADER
+ * ------------------------------------------------------------------- */
+@layer preloader {
+    .preloader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: var(--bg-canvas);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--gutter);
+        transition: opacity 500ms var(--ease-editorial), visibility 500ms var(--ease-editorial);
+    }
+
+    .preloader.is-loaded {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .preloader__inner {
+        width: min(100%, 360px);
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .preloader__brand {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding-block-end: 0.75rem;
+        border-block-end: 1px solid var(--rule);
+    }
+
+    .preloader__logo {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--accent);
+    }
+
+    .preloader__title {
+        font-family: var(--font-mono);
+        font-size: 0.74rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-secondary);
+    }
+
+    .preloader__track {
+        width: 100%;
+        height: 2px;
+        background: rgba(242, 239, 233, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .preloader__bar {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        width: 0%;
+        background: var(--accent);
+        transition: width 150ms linear;
+    }
+
+    .preloader__meta {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.14em;
+        color: var(--ink-muted);
+    }
+
+    .preloader__counter {
+        color: var(--ink-primary);
+        font-variant-numeric: tabular-nums;
     }
 }
 
