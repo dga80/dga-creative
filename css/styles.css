@@ -797,6 +797,10 @@
         cursor: pointer;
     }
 
+    .work-piece__viewport--wide {
+        aspect-ratio: 1.916 / 1;
+    }
+
     .work-piece__viewport--portrait {
         aspect-ratio: 10 / 11;
     }
