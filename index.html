@@ -706,10 +706,10 @@
                     </div>
 
                     <div class="contact-cta-strip">
-                        <a href="mailto:dani.dga@gmail.com" class="editorial-btn editorial-btn--solid">
+                        <button type="button" class="editorial-btn editorial-btn--solid" data-modal-target="modal-contact">
                             <span>Salúdame — Iniciar conversación</span>
                             <span class="arrow" aria-hidden="true">→</span>
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -1006,6 +1006,62 @@
                             <span class="arrow" aria-hidden="true">↗</span>
                         </a>
                     </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Modal de Contacto Rápido -->
+    <dialog id="modal-contact" class="case-dialog contact-dialog" aria-labelledby="modal-title-contact">
+        <div class="case-dialog__container">
+            <div class="case-dialog__topbar">
+                <span class="mono-caption">CONTACTO DIRECTO — BARCELONA</span>
+                <form method="dialog">
+                    <button type="submit" class="case-dialog__close" aria-label="Cerrar ventana de contacto">CERRAR [ESC]</button>
+                </form>
+            </div>
+            <div class="contact-dialog__body">
+                <h2 id="modal-title-contact" class="contact-dialog__title">Iniciar conversación</h2>
+                <p class="contact-dialog__lead">
+                    Elige el canal que te resulte más cómodo para escribirme sobre un proyecto, colaboración o consulta.
+                </p>
+
+                <div class="contact-dialog__options">
+                    <a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=dani.dga@gmail.com&amp;su=Hola%20Dani%20%E2%80%94%20Consulta%20desde%20tu%20portfolio" class="contact-option" target="_blank" rel="noopener noreferrer">
+                        <span class="contact-option__num">01</span>
+                        <span class="contact-option__info">
+                            <span class="contact-option__title">Abrir en Gmail (Web)</span>
+                            <span class="contact-option__meta">dani.dga@gmail.com · Nueva pestaña</span>
+                        </span>
+                        <span class="contact-option__action" aria-hidden="true">↗</span>
+                    </a>
+
+                    <a href="https://wa.me/34635537471?text=Hola%20Dani%2C%20he%20visto%20tu%20portfolio%20y%20me%20gustar%C3%ADa%20hablar%20contigo." class="contact-option" target="_blank" rel="noopener noreferrer">
+                        <span class="contact-option__num">02</span>
+                        <span class="contact-option__info">
+                            <span class="contact-option__title">Escribir por WhatsApp</span>
+                            <span class="contact-option__meta">+34 635 537 471 · Respuesta directa</span>
+                        </span>
+                        <span class="contact-option__action" aria-hidden="true">↗</span>
+                    </a>
+
+                    <a href="mailto:dani.dga@gmail.com?subject=Hola%20Dani%20%E2%80%94%20Consulta%20desde%20tu%20portfolio" class="contact-option">
+                        <span class="contact-option__num">03</span>
+                        <span class="contact-option__info">
+                            <span class="contact-option__title">App de correo predeterminada</span>
+                            <span class="contact-option__meta">Mail, Outlook u otro cliente nativo</span>
+                        </span>
+                        <span class="contact-option__action" aria-hidden="true">→</span>
+                    </a>
+
+                    <button type="button" class="contact-option" data-copy-email="dani.dga@gmail.com" data-copy-label="COPIAR" data-copied-label="COPIADO ✓">
+                        <span class="contact-option__num">04</span>
+                        <span class="contact-option__info">
+                            <span class="contact-option__title">Copiar dirección de correo</span>
+                            <span class="contact-option__meta">dani.dga@gmail.com</span>
+                        </span>
+                        <span class="contact-option__action contact-option__badge" data-copy-feedback>COPIAR</span>
+                    </button>
                 </div>
             </div>
         </div>

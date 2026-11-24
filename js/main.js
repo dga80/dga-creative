@@ -301,6 +301,25 @@
     /* -------------------------------------------------------------------
      * 7. EMAIL CLIPBOARD & FOOTER YEAR
      * ------------------------------------------------------------------- */
+    async function copyTextToClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return;
+        }
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (!copied) {
+            throw new Error("Copy command failed");
+        }
+    }
+
     function initUtilities() {
         const copyBtn = document.getElementById("copy-email-btn");
         const copyText = document.getElementById("copy-email-text");
@@ -309,7 +328,7 @@
             copyBtn.addEventListener("click", async () => {
                 const email = copyBtn.dataset.email || "dani.dga@gmail.com";
                 try {
-                    await navigator.clipboard.writeText(email);
+                    await copyTextToClipboard(email);
                     const original = copyText.textContent;
                     copyText.textContent = "[ DIRECCIÓN COPIADA ✓ ]";
                     setTimeout(() => {
@@ -320,6 +339,27 @@
                 }
             });
         }
+
+        document.querySelectorAll("[data-copy-email]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const email = btn.dataset.copyEmail || "dani.dga@gmail.com";
+                const feedbackEl = btn.querySelector("[data-copy-feedback]");
+                const defaultLabel = btn.dataset.copyLabel || "COPIAR";
+                const copiedLabel = btn.dataset.copiedLabel || "COPIADO ✓";
+
+                try {
+                    await copyTextToClipboard(email);
+                    if (feedbackEl) {
+                        feedbackEl.textContent = copiedLabel;
+                        setTimeout(() => {
+                            feedbackEl.textContent = defaultLabel;
+                        }, 2400);
+                    }
+                } catch (_err) {
+                    window.location.href = `mailto:${email}`;
+                }
+            });
+        });
 
         const yearEl = document.getElementById("current-year");
         if (yearEl) {
